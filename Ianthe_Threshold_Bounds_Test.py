@@ -1,7 +1,3 @@
-#@ CommandService command
-
-#@ String (choices={"Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"}, style="listBox") threshold_method
-
 from ij import IJ
 from ij.process import AutoThresholder
 
@@ -25,13 +21,16 @@ def thresholdRanges(Image, ThresholdMethod):
 	UpperBounds = AutoThresholder().getThreshold(ThresholdMethod, CappedHistogram)
 	return LowerBounds, UpperBounds
 
-Image = IJ.getImage().duplicate()
+ThreshList = ["Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"]
+RawImage = IJ.getImage()
+Image = RawImage.duplicate()
 IJ.run(Image, "Enhance Contrast...", "saturated=0.01 use")
 # Converts the image to 8-bit
 IJ.run(Image, "8-bit", "")
 BrightSlice = brightestSlice(Image)
 Image.setSlice(BrightSlice)
-# Determines threshold ranges for ridge detection
-LowerBounds, UpperBounds = thresholdRanges(Image, threshold_method)
 Image.show()
-IJ.log("Determined lower bound: " + str(LowerBounds) + " and upper bound: " + str(UpperBounds) + " for thresholding using " + threshold_method + " method.")
+for threshold_method in ThreshList:
+	# Determines threshold ranges for ridge detection
+	LowerBounds, UpperBounds = thresholdRanges(Image, threshold_method)
+	IJ.log("Determined lower bound: " + str(LowerBounds) + " and upper bound: " + str(UpperBounds) + " for thresholding using " + threshold_method + " method.")
