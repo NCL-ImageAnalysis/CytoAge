@@ -450,7 +450,10 @@ def getRoiMeasurements(SampleRoi, Image, Measurement_Options):
 	Image.resetRoi()
 	return OutputDict
 
-def nan_zero_divide(a, b):
+def nan_zero_divide(a, b, float_result=True):
+	if float_result:
+		a = float(a)
+		b = float(b)
 	try:
 		result = a / b
 	except ZeroDivisionError:
@@ -583,13 +586,13 @@ def main(InputPath,
 						# Getting ridge detection measurements
 						ridge_area_list = areaPerSlice(RidgeOutput["Binary"])
 						ridge_3D_area = total_3D_area(ridge_area_list, scaling=scaling)
-						skeleton_density = nan_zero_divide(ridge_3D_area, cell_3D_area)
+						skeleton_density = nan_zero_divide(ridge_3D_area, cell_3D_area, float_result=True)
 						ridge_widths = RidgeOutput["Summary"].getColumn("Mean line width")
 						# Skip if too many ridges detected
 						if len(ridge_widths) > max_ridges > 0:
 							IJ.log(str(len(ridge_widths)) + " ridges detected, which is more than the maximum of " + str(max_ridges) + ". Skipping this channel.")
 							continue
-						avg_ridge_width = nan_zero_divide(sum(ridge_widths), len(ridge_widths))
+						avg_ridge_width = nan_zero_divide(sum(ridge_widths), len(ridge_widths), float_result=True)
 						#------------------------------------------------------------------------------^
 						IJ.log("Running analyze skeleton...")
 						IJ.run(RidgeOutput["Binary"], "Skeletonize (2D/3D)", "")
@@ -625,11 +628,11 @@ def main(InputPath,
 							vertex_list.append(str([(v.x * scaling[0], v.y * scaling[1], v.z * scaling[2]) for v in vertices]))
 							v_indeces_list.append(str(vertex_indecies))
 						filament_count = len(length_list_3D)
-						avg_filament_length_2D = nan_zero_divide(sum(length_list_2D), filament_count)
-						avg_filament_length_3D = nan_zero_divide(sum(length_list_3D), filament_count)
+						avg_filament_length_2D = nan_zero_divide(sum(length_list_2D), filament_count, float_result=True)
+						avg_filament_length_3D = nan_zero_divide(sum(length_list_3D), filament_count, float_result=True)
 						num_branches = sum(skellyres.getBranches())
-						branch_ratio = nan_zero_divide(num_branches, filament_count)
-						branch_density = nan_zero_divide(num_branches, cell_3D_area)
+						branch_ratio = nan_zero_divide(num_branches, filament_count, float_result=True)
+						branch_density = nan_zero_divide(num_branches, cell_3D_area, float_result=True)
 
 						# Data Outputs-------------------------------------------------------------------v
 						# All Cells Dictionary----------------------------------------------------------v
