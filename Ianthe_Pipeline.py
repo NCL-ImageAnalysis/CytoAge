@@ -14,6 +14,7 @@
 import os, re, traceback
 
 from java.lang import Math
+import java.lang.Exception as JavaException
 
 from ij import IJ, ImagePlus
 from ij.io import RoiDecoder
@@ -673,10 +674,10 @@ def main(InputPath,
 						# Save as CSVs
 						coords_rt.save(os.path.join(OutputPath, "Per_Filament_Coordinates.csv"))
 						width_rt.save(os.path.join(OutputPath, "Per_Filament_Widths.csv"))
-					except Exception as e:
+					except (Exception, JavaException) as e:
 						IJ.log("Error processing file: " + filepath + " Channel: " + str(channel) + "\n" + traceback.format_exc())
 
-			except Exception as e:
+			except (Exception, JavaException) as e:
 				IJ.log("Error processing file: " + filepath + "\n" + traceback.format_exc())
 
 inpath = InputFolder.getPath()
