@@ -524,8 +524,6 @@ def main(InputPath,
 				   "Verticies",
 				   "Vertex Locations"
 				   ]
-	
-	coords_dict = {key: [] for key in coords_keys}
 
 	if os.path.exists(os.path.join(OutputPath, "Per_Filament_Widths.csv")):
 		IJ.log("Loading existing Per Filament Widths CSV...")
@@ -540,6 +538,8 @@ def main(InputPath,
 		files = [f for f in files if regexpattern.search(f)]
 		for f in files:
 			try:
+				# Resetting the coords_dict so it is not appended on multiple times per run
+				coords_dict = {key: [] for key in coords_keys}
 				# Data and metadata loading--------------------------------------------------------v
 				# Load image
 				filepath = os.path.join(root, f)
