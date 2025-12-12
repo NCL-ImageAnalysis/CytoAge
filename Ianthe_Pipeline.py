@@ -365,12 +365,32 @@ def dict_2_table(dictionary, key_order=None):
 
 def table_2_dict(rt):
 	dictionary = {}
-	i = 0
-	while rt.columnExists(i):
-		col = rt.getColumnHeading(i)
+	for col in rt.getHeadings():
 		dictionary[col] = list(rt.getColumnAsStrings(col))
-		i += 1
 	return dictionary
+
+def dict_2_string(dictionary, key_order=None, separator=",", include_header=True):
+	if key_order is None:
+		key_order = list(dictionary.keys())
+		key_order.sort()
+	output_lines = []
+	# Header line
+	if include_header:
+		output_lines.append(separator.join(key_order))
+	# Data lines
+	n = 0
+	for col in key_order:
+		if len(dictionary[col]) > n:
+			n = len(dictionary[col])
+	for row in range(n):
+		row_values = []
+		for col in key_order:
+			try:
+				row_values.append(str(dictionary[col][row]))
+			except IndexError:
+				row_values.append("NaN")
+		output_lines.append(separator.join(row_values))
+	return "\n".join(output_lines)
 
 def getRoiMeasurements(SampleRoi, Image, Measurement_Options):
 	"""Gets the given measurements of the provided Roi for the given image
@@ -505,12 +525,7 @@ def main(InputPath,
 				   "Vertex Locations"
 				   ]
 	
-	if os.path.exists(os.path.join(OutputPath, "Per_Filament_Coordinates.csv")):
-		IJ.log("Loading existing Per Filament Coordinates CSV...")
-		coords_rt = ResultsTable.open(os.path.join(OutputPath, "Per_Filament_Coordinates.csv"))
-		coords_dict = table_2_dict(coords_rt)
-	else:
-		coords_dict = {key: [] for key in coords_keys}
+	coords_dict = {key: [] for key in coords_keys}
 
 	if os.path.exists(os.path.join(OutputPath, "Per_Filament_Widths.csv")):
 		IJ.log("Loading existing Per Filament Widths CSV...")
@@ -666,14 +681,22 @@ def main(InputPath,
 							coords_dict["Coordinates (um)"].append(coords_list[filament_id])
 							coords_dict["Verticies"].append(vertex_list[filament_id])
 							coords_dict["Vertex Locations"].append(v_indeces_list[filament_id])
-						# Convert to results tables
-						coords_rt = dict_2_table(coords_dict, key_order=coords_keys)
+						# If file already exists, will convert to string and append to it
+						if os.path.exists(os.path.join(OutputPath, "Per_Filament_Coordinates.csv")):
+							coords_str = dict_2_string(coords_dict, key_order=coords_keys, separator=",", include_header=False)
+							with open(os.path.join(OutputPath, "Per_Filament_Coordinates.csv"), "a") as coord_file:
+								coord_file.write(coords_str)
+						# Otherwise will save normally
+						else:
+							coords_rt = dict_2_table(coords_dict, key_order=coords_keys)
+							coords_rt.save(os.path.join(OutputPath, "Per_Filament_Coordinates.csv"))
+						# Width dictionary------------------------------------------------v
 						width_dict[filepath + "-Channel-" + str(channel)] = ridge_widths
 						width_keys.append(filepath + "-Channel-" + str(channel))
 						width_rt = dict_2_table(width_dict, key_order=width_keys)
-						# Save as CSVs
-						coords_rt.save(os.path.join(OutputPath, "Per_Filament_Coordinates.csv"))
+						# Save as CSV
 						width_rt.save(os.path.join(OutputPath, "Per_Filament_Widths.csv"))
+						#-----------------------------------------------------------------^
 					except (Exception, JavaException) as e:
 						IJ.log("Error processing file: " + filepath + " Channel: " + str(channel) + "\n" + traceback.format_exc())
 
