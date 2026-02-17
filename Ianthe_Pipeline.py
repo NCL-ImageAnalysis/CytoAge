@@ -386,7 +386,11 @@ def dict_2_string(dictionary, key_order=None, separator=",", include_header=True
 		row_values = []
 		for col in key_order:
 			try:
-				row_values.append(str(dictionary[col][row]))
+				value = str(dictionary[col][row])
+				# This is needed to avoid issues with separators in the values, which would cause issues when reading the CSV later
+				if separator in value:
+					value = '"' + value + '"'
+				row_values.append(value)
 			except IndexError:
 				row_values.append("NaN")
 		output_lines.append(separator.join(row_values))
