@@ -394,7 +394,7 @@ def dict_2_string(dictionary, key_order=None, separator=",", include_header=True
 			except IndexError:
 				row_values.append("NaN")
 		output_lines.append(separator.join(row_values))
-	return "\n".join(output_lines)
+	return "\n".join(output_lines) + "\n"
 
 def getRoiMeasurements(SampleRoi, Image, Measurement_Options):
 	"""Gets the given measurements of the provided Roi for the given image
